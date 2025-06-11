@@ -6,11 +6,12 @@ AI-powered gitmoji commit message generator! Automatically analyze your git chan
 
 - 🤖 **AI-Powered Analysis**: Uses advanced AI to understand your code changes
 - 🎯 **Smart Gitmoji Selection**: Automatically chooses the most appropriate gitmoji
+- 📝 **Official Gitmoji Spec**: Follows the [official gitmoji specification](https://gitmoji.dev/) format
 - 🔄 **Interactive Mode**: Choose from multiple AI-generated suggestions  
 - ⚙️ **Configurable**: Support for multiple AI providers (OpenAI, Anthropic)
 - 🚀 **Auto-commit**: Optionally commit automatically with generated messages
 - 📋 **Gitmoji Browser**: List and search available gitmojis
-- 🎨 **Conventional Commits**: Optional scope support for conventional commit format
+- 🎨 **Extended Descriptions**: Detailed commit descriptions explaining what, why, and impact
 
 ## 📦 Installation
 
@@ -156,14 +157,14 @@ Add all changes and proceed with commit? Yes
 🤖 Generating gitmoji suggestions...
 
 ✨ Generated commit message:
-   Title: ✨ add UserProfile component with TypeScript types
+   Title: ✨ (components): add UserProfile with avatar support
    Description: Created a new UserProfile component that displays user information with avatar support and integrated TypeScript type definitions. This component was needed to provide a consistent user interface element across the application. The TypeScript types ensure type safety and improve developer experience by providing proper intellisense and compile-time error checking.
    Reasoning: New feature component was added to the codebase
    Confidence: 95%
 
 🚀 Committing changes...
 ✅ Changes committed successfully!
-📋 Commit: a1b2c3d "✨ add UserProfile component with TypeScript types"
+📋 Commit: a1b2c3d "✨ (components): add UserProfile with avatar support"
 ```
 
 ### Manual Staging
@@ -190,7 +191,7 @@ $ gitmoji-msg
 🤖 Generating gitmoji suggestions...
 
 ✨ Generated commit message:
-   Title: 🐛 fix email validation regex pattern
+   Title: 🐛 fix email validation regex pattern  
    Description: Fixed the email validation regular expression that was incorrectly rejecting valid email addresses with plus signs and underscores. The previous pattern was too restrictive and caused user registration failures. This fix ensures all RFC-compliant email addresses are properly accepted.
    Reasoning: Bug fix for validation logic
    Confidence: 92%
