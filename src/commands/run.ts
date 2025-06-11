@@ -1,44 +1,43 @@
 import { Command, Flags } from '@oclif/core';
-import { GitAnalyzer } from '../utils/git.js';
+import inquirer from 'inquirer';
+import { simpleGit } from 'simple-git';
+
 import { AICommitGenerator, CommitSuggestion } from '../utils/ai.js';
 import { ConfigManager } from '../utils/config.js';
-import { simpleGit } from 'simple-git';
-import inquirer from 'inquirer';
+import { GitAnalyzer } from '../utils/git.js';
 
 export default class Run extends Command {
   static override description = 'Add all changes, generate gitmoji commit message, and commit automatically';
-  
-  static override examples = [
+static override examples = [
     '<%= config.bin %> <%= command.id %>',
     '<%= config.bin %> <%= command.id %> --no-interactive',
     '<%= config.bin %> <%= command.id %> --scope api',
     '<%= config.bin %> <%= command.id %> --model gpt-4',
   ];
-
-  static override flags = {
-    interactive: Flags.boolean({
-      char: 'i',
-      description: 'enable interactive mode to choose from multiple suggestions',
-      default: true,
-      allowNo: true,
+static override flags = {
+    dry: Flags.boolean({
+      char: 'd',
+      default: false,
+      description: 'dry run - show what would be committed without actually committing',
     }),
-    scope: Flags.string({
-      char: 's',
-      description: 'add scope to commit message (e.g., "api", "ui")',
+    interactive: Flags.boolean({
+      allowNo: true,
+      char: 'i',
+      default: true,
+      description: 'enable interactive mode to choose from multiple suggestions',
+    }),
+    model: Flags.string({
+      char: 'm',
+      description: 'AI model to use',
     }),
     provider: Flags.string({
       char: 'p',
       description: 'AI provider to use (openai, anthropic)',
       options: ['openai', 'anthropic'],
     }),
-    model: Flags.string({
-      char: 'm',
-      description: 'AI model to use',
-    }),
-    dry: Flags.boolean({
-      char: 'd',
-      description: 'dry run - show what would be committed without actually committing',
-      default: false,
+    scope: Flags.string({
+      char: 's',
+      description: 'add scope to commit message (e.g., "api", "ui")',
     }),
   };
 
@@ -51,7 +50,7 @@ export default class Run extends Command {
       const config = await configManager.loadConfig();
       
       // Override config with command flags
-      if (flags.provider) config.provider = flags.provider as 'openai' | 'anthropic';
+      if (flags.provider) config.provider = flags.provider as 'anthropic' | 'openai';
       if (flags.model) config.model = flags.model;
       if (flags.scope) config.scope = flags.scope;
       config.interactive = flags.interactive;
@@ -91,12 +90,14 @@ export default class Run extends Command {
       }
 
       // Confirm before adding all files (unless dry run)
-      if (!flags.dry) {
+      if (flags.dry) {
+        this.log('🏃 Dry run mode - simulating git add .');
+      } else {
         const { confirm } = await inquirer.prompt([{
-          type: 'confirm',
-          name: 'confirm',
-          message: 'Add all changes and proceed with commit?',
           default: true,
+          message: 'Add all changes and proceed with commit?',
+          name: 'confirm',
+          type: 'confirm',
         }]);
 
         if (!confirm) {
@@ -107,8 +108,6 @@ export default class Run extends Command {
         // Add all files
         this.log('➕ Adding all changes...');
         await git.add('.');
-      } else {
-        this.log('🏃 Dry run mode - simulating git add .');
       }
 
       // Analyze changes
@@ -122,6 +121,7 @@ export default class Run extends Command {
         if (!diff) {
           this.error('No changes to analyze');
         }
+
         analysis = await gitAnalyzer.analyzeChanges(diff);
       } else {
         // Analyze staged changes
@@ -145,15 +145,15 @@ export default class Run extends Command {
       if (config.interactive && suggestions.suggestions.length > 1) {
         const choices = suggestions.suggestions.map((s, index) => ({
           name: `${s.gitmoji} ${this.formatCommitMessage(s.message, config.scope)} (${s.confidence}% confidence)\n    📝 ${s.description}`,
-          value: index,
           short: s.message,
+          value: index,
         }));
 
         const { selectedIndex } = await inquirer.prompt([{
-          type: 'list',
-          name: 'selectedIndex',
-          message: '🎨 Choose your commit message:',
           choices,
+          message: '🎨 Choose your commit message:',
+          name: 'selectedIndex',
+          type: 'list',
         }]);
 
         selectedSuggestion = suggestions.suggestions[selectedIndex];
@@ -191,12 +191,16 @@ export default class Run extends Command {
   }
 
   private formatCommitMessage(message: string, scope?: string): string {
+    // If scope is provided via command line, override any existing scope
     if (scope) {
-      // Check if message already has conventional format
-      if (message.includes(':')) {
-        return message.replace(':', `(${scope}):`);
+      // Remove existing scope if present
+      const messageWithoutScope = message.replace(/^\([^)]+\):?\s*/, '');
+      
+      // Add new scope
+      if (messageWithoutScope.startsWith(':')) {
+        return `(${scope})${messageWithoutScope}`;
       } else {
-        return `(${scope}): ${message}`;
+        return `(${scope}): ${messageWithoutScope}`;
       }
     }
     return message;

@@ -7,7 +7,7 @@ import { GitChangeAnalysis } from './git.js';
 const CommitSuggestionSchema = z.object({
   gitmoji: z.string().describe('The gitmoji emoji character (e.g., "🎨")'),
   gitmojiCode: z.string().describe('The gitmoji code (e.g., ":art:")'),
-  message: z.string().describe('The commit message title (50-72 characters)'),
+  message: z.string().describe('Brief explanation of the change following gitmoji spec: <intention> [scope?][:?] <message>'),
   description: z.string().describe('Extended description paragraph explaining what happened and why'),
   reasoning: z.string().describe('Brief explanation for why this gitmoji was chosen'),
   confidence: z.number().min(0).max(100).describe('Confidence score 0-100'),
@@ -90,15 +90,26 @@ GIT CHANGE ANALYSIS:
 INSTRUCTIONS:
 1. Analyze the git changes and select the most appropriate gitmoji(s)
 2. Create 1-3 commit message suggestions ranked by relevance
-3. Title should be concise but descriptive (50-72 characters ideal)
-4. Description should be a detailed paragraph (2-4 sentences) explaining:
+3. Follow the OFFICIAL GITMOJI SPECIFICATION for the message format:
+   - Format: [scope?][:?] <message>
+   - Examples: "Lazyload home screen images", "Fix \`onClick\` event handler", "(components): Transform classes to hooks"
+   - Keep it concise and descriptive (50-72 characters ideal)
+4. IMPORTANT: Do NOT include the emoji in the message field - only provide the text portion
+5. For scope (optional):
+   - Use parentheses: (scope) or (scope):
+   - Examples: "(components)", "(api)", "(ui)", "(auth)"
+   - Add colon after scope if the message doesn't naturally flow
+6. Message should be a brief explanation of the change:
+   - Start with lowercase unless it's a proper noun
+   - No period at the end
+   - Be specific about what changed
+7. Description should be a detailed paragraph (2-4 sentences) explaining:
    - What specific changes were made
    - Why these changes were necessary
    - Impact or benefits of the changes
-5. Use conventional commit format when appropriate: type(scope): description
-6. Consider the primary purpose of the changes when selecting gitmojis
-7. Provide reasoning for your gitmoji selection
-8. Assign confidence scores based on how well the gitmoji matches the changes
+8. Consider the primary purpose of the changes when selecting gitmojis
+9. Provide reasoning for your gitmoji selection
+10. Assign confidence scores based on how well the gitmoji matches the changes
 
 Generate commit message suggestions now:`;
   }

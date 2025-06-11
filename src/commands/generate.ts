@@ -125,12 +125,16 @@ export default class Generate extends Command {
   }
 
   private formatCommitMessage(message: string, scope?: string): string {
+    // If scope is provided via command line, override any existing scope
     if (scope) {
-      // Check if message already has conventional format
-      if (message.includes(':')) {
-        return message.replace(':', `(${scope}):`);
+      // Remove existing scope if present
+      const messageWithoutScope = message.replace(/^\([^)]+\):?\s*/, '');
+      
+      // Add new scope
+      if (messageWithoutScope.startsWith(':')) {
+        return `(${scope})${messageWithoutScope}`;
       } else {
-        return `(${scope}): ${message}`;
+        return `(${scope}): ${messageWithoutScope}`;
       }
     }
     return message;
