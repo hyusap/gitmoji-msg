@@ -1,6 +1,6 @@
 import { Command, Flags } from '@oclif/core';
 import { GitAnalyzer } from '../utils/git.js';
-import { AICommitGenerator } from '../utils/ai.js';
+import { AICommitGenerator, CommitSuggestion } from '../utils/ai.js';
 import { ConfigManager } from '../utils/config.js';
 import { simpleGit } from 'simple-git';
 import inquirer from 'inquirer';
@@ -84,7 +84,7 @@ export default class Generate extends Command {
 
       if (config.interactive && suggestions.suggestions.length > 1) {
         const choices = suggestions.suggestions.map((s, index) => ({
-          name: `${s.gitmoji} ${this.formatCommitMessage(s.message, config.scope)} (${s.confidence}% confidence)`,
+          name: `${s.gitmoji} ${this.formatCommitMessage(s.message, config.scope)} (${s.confidence}% confidence)\n    📝 ${s.description}`,
           value: index,
           short: s.message,
         }));
@@ -101,10 +101,11 @@ export default class Generate extends Command {
 
       // Display selected suggestion
       const finalMessage = this.formatCommitMessage(selectedSuggestion.message, config.scope);
-      const fullCommitMessage = `${selectedSuggestion.gitmoji} ${finalMessage}`;
+      const fullCommitMessage = this.formatFullCommitMessage(selectedSuggestion, config.scope);
 
       this.log('\\n✨ Generated commit message:');
-      this.log(`   ${fullCommitMessage}`);
+      this.log(`   Title: ${selectedSuggestion.gitmoji} ${finalMessage}`);
+      this.log(`   Description: ${selectedSuggestion.description}`);
       this.log(`   Reasoning: ${selectedSuggestion.reasoning}`);
       this.log(`   Confidence: ${selectedSuggestion.confidence}%`);
 
@@ -115,7 +116,7 @@ export default class Generate extends Command {
         this.log('\\n✅ Changes committed successfully!');
       } else {
         this.log('\\n💡 To commit with this message, run:');
-        this.log(`   git commit -m "${fullCommitMessage}"`);
+        this.log(`   git commit -m "${selectedSuggestion.gitmoji} ${finalMessage}" -m "${selectedSuggestion.description}"`);
       }
 
     } catch (error) {
@@ -133,5 +134,10 @@ export default class Generate extends Command {
       }
     }
     return message;
+  }
+
+  private formatFullCommitMessage(suggestion: CommitSuggestion, scope?: string): string {
+    const title = `${suggestion.gitmoji} ${this.formatCommitMessage(suggestion.message, scope)}`;
+    return `${title}\n\n${suggestion.description}`;
   }
 }

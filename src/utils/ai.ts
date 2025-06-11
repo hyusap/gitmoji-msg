@@ -7,7 +7,8 @@ import { GitChangeAnalysis } from './git.js';
 const CommitSuggestionSchema = z.object({
   gitmoji: z.string().describe('The gitmoji emoji character (e.g., "🎨")'),
   gitmojiCode: z.string().describe('The gitmoji code (e.g., ":art:")'),
-  message: z.string().describe('The commit message description'),
+  message: z.string().describe('The commit message title (50-72 characters)'),
+  description: z.string().describe('Extended description paragraph explaining what happened and why'),
   reasoning: z.string().describe('Brief explanation for why this gitmoji was chosen'),
   confidence: z.number().min(0).max(100).describe('Confidence score 0-100'),
 });
@@ -89,11 +90,15 @@ GIT CHANGE ANALYSIS:
 INSTRUCTIONS:
 1. Analyze the git changes and select the most appropriate gitmoji(s)
 2. Create 1-3 commit message suggestions ranked by relevance
-3. Messages should be concise but descriptive (50-72 characters ideal)
-4. Use conventional commit format when appropriate: type(scope): description
-5. Consider the primary purpose of the changes when selecting gitmojis
-6. Provide reasoning for your gitmoji selection
-7. Assign confidence scores based on how well the gitmoji matches the changes
+3. Title should be concise but descriptive (50-72 characters ideal)
+4. Description should be a detailed paragraph (2-4 sentences) explaining:
+   - What specific changes were made
+   - Why these changes were necessary
+   - Impact or benefits of the changes
+5. Use conventional commit format when appropriate: type(scope): description
+6. Consider the primary purpose of the changes when selecting gitmojis
+7. Provide reasoning for your gitmoji selection
+8. Assign confidence scores based on how well the gitmoji matches the changes
 
 Generate commit message suggestions now:`;
   }
