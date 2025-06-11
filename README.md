@@ -156,7 +156,8 @@ Add all changes and proceed with commit? Yes
 🤖 Generating gitmoji suggestions...
 
 ✨ Generated commit message:
-   ✨ add UserProfile component with TypeScript types
+   Title: ✨ add UserProfile component with TypeScript types
+   Description: Created a new UserProfile component that displays user information with avatar support and integrated TypeScript type definitions. This component was needed to provide a consistent user interface element across the application. The TypeScript types ensure type safety and improve developer experience by providing proper intellisense and compile-time error checking.
    Reasoning: New feature component was added to the codebase
    Confidence: 95%
 
@@ -174,7 +175,8 @@ $ gitmoji-msg
 🤖 Generating gitmoji suggestions...
 
 ✨ Generated commit message:
-   ✨ add UserProfile component with avatar support
+   Title: ✨ add UserProfile component with avatar support
+   Description: Implemented a new UserProfile component that renders user details with customizable avatar display. This component provides a reusable interface element for showing user information consistently across the application.
    Reasoning: New feature component was added to the codebase
    Confidence: 95%
 ```
@@ -188,7 +190,8 @@ $ gitmoji-msg
 🤖 Generating gitmoji suggestions...
 
 ✨ Generated commit message:
-   🐛 fix email validation regex pattern
+   Title: 🐛 fix email validation regex pattern
+   Description: Fixed the email validation regular expression that was incorrectly rejecting valid email addresses with plus signs and underscores. The previous pattern was too restrictive and caused user registration failures. This fix ensures all RFC-compliant email addresses are properly accepted.
    Reasoning: Bug fix for validation logic
    Confidence: 92%
 ```
@@ -202,7 +205,8 @@ $ gitmoji-msg --scope docs
 🤖 Generating gitmoji suggestions...
 
 ✨ Generated commit message:
-   📝(docs): update API documentation and examples
+   Title: 📝(docs): update API documentation and examples
+   Description: Updated the API documentation to reflect recent endpoint changes and added comprehensive examples for the new authentication flow. The documentation now includes code samples in multiple languages and clarifies the required headers for secure API access. These updates will help developers integrate with the API more effectively.
    Reasoning: Documentation files were updated
    Confidence: 98%
 ```
