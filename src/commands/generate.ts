@@ -84,7 +84,7 @@ export default class Generate extends Command {
 
       if (config.interactive && suggestions.suggestions.length > 1) {
         const choices = suggestions.suggestions.map((s, index) => ({
-          name: `${s.gitmoji} ${this.formatCommitMessage(s.message, config.scope)} (${s.confidence}% confidence)\n    📝 ${s.description}`,
+          name: `${s.gitmoji} ${this.formatCommitMessage(s, config.scope)} (${s.confidence}% confidence)${s.description ? `\n    📝 ${s.description}` : ''}`,
           value: index,
           short: s.message,
         }));
@@ -100,13 +100,14 @@ export default class Generate extends Command {
       }
 
       // Display selected suggestion
-      const finalMessage = this.formatCommitMessage(selectedSuggestion.message, config.scope);
+      const finalMessage = this.formatCommitMessage(selectedSuggestion, config.scope);
       const fullCommitMessage = this.formatFullCommitMessage(selectedSuggestion, config.scope);
 
       this.log('\\n✨ Generated commit message:');
       this.log(`   Title: ${selectedSuggestion.gitmoji} ${finalMessage}`);
-      this.log(`   Description: ${selectedSuggestion.description}`);
-      this.log(`   Reasoning: ${selectedSuggestion.reasoning}`);
+      if (selectedSuggestion.description) {
+        this.log(`   Description: ${selectedSuggestion.description}`);
+      }
       this.log(`   Confidence: ${selectedSuggestion.confidence}%`);
 
       // Handle auto-commit
@@ -116,7 +117,11 @@ export default class Generate extends Command {
         this.log('\\n✅ Changes committed successfully!');
       } else {
         this.log('\\n💡 To commit with this message, run:');
-        this.log(`   git commit -m "${selectedSuggestion.gitmoji} ${finalMessage}" -m "${selectedSuggestion.description}"`);
+        if (selectedSuggestion.description) {
+          this.log(`   git commit -m "${selectedSuggestion.gitmoji} ${finalMessage}" -m "${selectedSuggestion.description}"`);
+        } else {
+          this.log(`   git commit -m "${selectedSuggestion.gitmoji} ${finalMessage}"`);
+        }
       }
 
     } catch (error) {
@@ -124,24 +129,18 @@ export default class Generate extends Command {
     }
   }
 
-  private formatCommitMessage(message: string, scope?: string): string {
-    // If scope is provided via command line, override any existing scope
-    if (scope) {
-      // Remove existing scope if present
-      const messageWithoutScope = message.replace(/^\([^)]+\):?\s*/, '');
-      
-      // Add new scope
-      if (messageWithoutScope.startsWith(':')) {
-        return `(${scope})${messageWithoutScope}`;
-      } else {
-        return `(${scope}): ${messageWithoutScope}`;
-      }
+  private formatCommitMessage(suggestion: CommitSuggestion, scope?: string): string {
+    // Use command line scope if provided, otherwise use AI-suggested scope
+    const finalScope = scope || suggestion.scope;
+    
+    if (finalScope) {
+      return `(${finalScope}): ${suggestion.message}`;
     }
-    return message;
+    return suggestion.message;
   }
 
   private formatFullCommitMessage(suggestion: CommitSuggestion, scope?: string): string {
-    const title = `${suggestion.gitmoji} ${this.formatCommitMessage(suggestion.message, scope)}`;
-    return `${title}\n\n${suggestion.description}`;
+    const title = `${suggestion.gitmoji} ${this.formatCommitMessage(suggestion, scope)}`;
+    return suggestion.description ? `${title}\n\n${suggestion.description}` : title;
   }
 }

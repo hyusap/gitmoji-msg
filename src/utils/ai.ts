@@ -7,9 +7,9 @@ import { GitChangeAnalysis } from './git.js';
 const CommitSuggestionSchema = z.object({
   gitmoji: z.string().describe('The gitmoji emoji character (e.g., "🎨")'),
   gitmojiCode: z.string().describe('The gitmoji code (e.g., ":art:")'),
-  message: z.string().describe('Brief explanation of the change following gitmoji spec: <intention> [scope?][:?] <message>'),
-  description: z.string().describe('Extended description paragraph explaining what happened and why'),
-  reasoning: z.string().describe('Brief explanation for why this gitmoji was chosen'),
+  scope: z.string().optional().describe('Optional scope in parentheses (e.g., "api", "ui", "auth") - no parentheses included'),
+  message: z.string().describe('Brief explanation of the change (just the message part, no emoji or scope)'),
+  description: z.string().describe('Concise technical description - only if substantial changes warrant explanation'),
   confidence: z.number().min(0).max(100).describe('Confidence score 0-100'),
 });
 
@@ -72,44 +72,35 @@ export class AICommitGenerator {
 AVAILABLE GITMOJIS:
 ${gitmojiContext}
 
-GIT CHANGE ANALYSIS:
-- Files changed: ${analysis.filePaths.join(', ')}
-- File types: ${analysis.fileTypes.join(', ')}
-- Change description: ${analysis.changeDescription}
-- Has new files: ${analysis.hasNewFiles}
-- Has deleted files: ${analysis.hasDeletedFiles}
-- Has modified files: ${analysis.hasModifiedFiles}
-- Is feature: ${analysis.isFeature}
-- Is bug fix: ${analysis.isBugFix}
-- Is refactor: ${analysis.isRefactor}
-- Is documentation: ${analysis.isDocumentation}
-- Is test: ${analysis.isTest}
-- Is config: ${analysis.isConfig}
-- Is breaking change: ${analysis.isBreakingChange}
+FILES CHANGED: ${analysis.filePaths.join(', ')}
+FILE TYPES: ${analysis.fileTypes.join(', ')}
+
+GIT DIFF:
+${analysis.diff}
 
 INSTRUCTIONS:
-1. Analyze the git changes and select the most appropriate gitmoji(s)
-2. Create 1-3 commit message suggestions ranked by relevance
-3. Follow the OFFICIAL GITMOJI SPECIFICATION for the message format:
-   - Format: [scope?][:?] <message>
-   - Examples: "Lazyload home screen images", "Fix \`onClick\` event handler", "(components): Transform classes to hooks"
-   - Keep it concise and descriptive (50-72 characters ideal)
-4. IMPORTANT: Do NOT include the emoji in the message field - only provide the text portion
-5. For scope (optional):
-   - Use parentheses: (scope) or (scope):
-   - Examples: "(components)", "(api)", "(ui)", "(auth)"
-   - Add colon after scope if the message doesn't naturally flow
-6. Message should be a brief explanation of the change:
-   - Start with lowercase unless it's a proper noun
-   - No period at the end
-   - Be specific about what changed
-7. Description should be a detailed paragraph (2-4 sentences) explaining:
-   - What specific changes were made
-   - Why these changes were necessary
-   - Impact or benefits of the changes
-8. Consider the primary purpose of the changes when selecting gitmojis
-9. Provide reasoning for your gitmoji selection
-10. Assign confidence scores based on how well the gitmoji matches the changes
+1. Analyze the git diff and select the most appropriate gitmoji
+2. Break down the commit message into separate components:
+   - gitmoji: The emoji character
+   - gitmojiCode: The :code: version
+   - scope: Optional scope without parentheses (e.g., "api", "ui", "auth") - only if clearly applicable
+   - message: Brief explanation (lowercase, no period, specific action)
+3. Message requirements:
+   - Be concise and specific about what changed
+   - Start with verb (add, fix, update, remove, refactor)
+   - No emoji, no scope, no fluff
+   - Examples: "add user authentication", "fix memory leak in parser", "update API endpoints"
+4. Description requirements:
+   - Only include if changes are substantial/complex
+   - Be information-dense, no marketing speak
+   - Focus on technical details: what changed, why, impact
+   - Keep short if changes are simple
+   - Examples: "Replaces deprecated crypto.createHash with Node 18+ webcrypto API"
+5. Scope guidelines:
+   - Only use if change is clearly bounded to a specific area
+   - Use common terms: api, ui, auth, db, config, cli, docs
+   - Leave empty for general/mixed changes
+6. Assign confidence based on gitmoji appropriateness
 
 Generate commit message suggestions now:`;
   }

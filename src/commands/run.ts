@@ -78,36 +78,50 @@ static override flags = {
         return;
       }
 
-      // Show what will be added
-      this.log(`📁 Found ${status.files.length} changed file(s):`);
-      for (const file of status.files.slice(0, 10)) { // Show first 10 files
-        const indicator = this.getStatusIndicator(file.index, file.working_dir);
-        this.log(`   ${indicator} ${file.path}`);
-      }
+      // Check if there are already staged changes
+      const hasStagedChanges = status.staged.length > 0;
       
-      if (status.files.length > 10) {
-        this.log(`   ... and ${status.files.length - 10} more files`);
-      }
-
-      // Confirm before adding all files (unless dry run)
-      if (flags.dry) {
-        this.log('🏃 Dry run mode - simulating git add .');
+      if (hasStagedChanges) {
+        this.log(`📁 Found ${status.staged.length} staged file(s):`);
+        for (const file of status.staged.slice(0, 10)) {
+          this.log(`   ✅ ${file}`);
+        }
+        if (status.staged.length > 10) {
+          this.log(`   ... and ${status.staged.length - 10} more files`);
+        }
+        this.log('🎯 Using existing staged changes');
       } else {
-        const { confirm } = await inquirer.prompt([{
-          default: true,
-          message: 'Add all changes and proceed with commit?',
-          name: 'confirm',
-          type: 'confirm',
-        }]);
-
-        if (!confirm) {
-          this.log('❌ Operation cancelled');
-          return;
+        // Show what will be added
+        this.log(`📁 Found ${status.files.length} changed file(s):`);
+        for (const file of status.files.slice(0, 10)) { // Show first 10 files
+          const indicator = this.getStatusIndicator(file.index, file.working_dir);
+          this.log(`   ${indicator} ${file.path}`);
+        }
+        
+        if (status.files.length > 10) {
+          this.log(`   ... and ${status.files.length - 10} more files`);
         }
 
-        // Add all files
-        this.log('➕ Adding all changes...');
-        await git.add('.');
+        // Confirm before adding all files (unless dry run)
+        if (flags.dry) {
+          this.log('🏃 Dry run mode - simulating git add .');
+        } else {
+          const { confirm } = await inquirer.prompt([{
+            default: true,
+            message: 'Add all changes and proceed with commit?',
+            name: 'confirm',
+            type: 'confirm',
+          }]);
+
+          if (!confirm) {
+            this.log('❌ Operation cancelled');
+            return;
+          }
+
+          // Add all files
+          this.log('➕ Adding all changes...');
+          await git.add('.');
+        }
       }
 
       // Analyze changes
@@ -115,16 +129,15 @@ static override flags = {
       const gitAnalyzer = new GitAnalyzer();
       
       let analysis;
-      if (flags.dry) {
-        // For dry run, analyze working directory changes
+      if (flags.dry && !hasStagedChanges) {
+        // For dry run with no staged changes, analyze working directory changes
         const diff = await git.diff();
         if (!diff) {
           this.error('No changes to analyze');
         }
-
         analysis = await gitAnalyzer.analyzeChanges(diff);
       } else {
-        // Analyze staged changes
+        // Analyze staged changes (either existing or newly added)
         analysis = await gitAnalyzer.analyzeChanges();
       }
 
@@ -144,7 +157,7 @@ static override flags = {
 
       if (config.interactive && suggestions.suggestions.length > 1) {
         const choices = suggestions.suggestions.map((s, index) => ({
-          name: `${s.gitmoji} ${this.formatCommitMessage(s.message, config.scope)} (${s.confidence}% confidence)\n    📝 ${s.description}`,
+          name: `${s.gitmoji} ${this.formatCommitMessage(s, config.scope)} (${s.confidence}% confidence)${s.description ? `\n    📝 ${s.description}` : ''}`,
           short: s.message,
           value: index,
         }));
@@ -160,19 +173,24 @@ static override flags = {
       }
 
       // Display selected suggestion
-      const finalMessage = this.formatCommitMessage(selectedSuggestion.message, config.scope);
+      const finalMessage = this.formatCommitMessage(selectedSuggestion, config.scope);
       const fullCommitMessage = this.formatFullCommitMessage(selectedSuggestion, config.scope);
 
       this.log('\n✨ Generated commit message:');
       this.log(`   Title: ${selectedSuggestion.gitmoji} ${finalMessage}`);
-      this.log(`   Description: ${selectedSuggestion.description}`);
-      this.log(`   Reasoning: ${selectedSuggestion.reasoning}`);
+      if (selectedSuggestion.description) {
+        this.log(`   Description: ${selectedSuggestion.description}`);
+      }
       this.log(`   Confidence: ${selectedSuggestion.confidence}%`);
 
       // Commit the changes
       if (flags.dry) {
         this.log('\n🏃 Dry run mode - would execute:');
-        this.log(`   git commit -m "${selectedSuggestion.gitmoji} ${finalMessage}" -m "${selectedSuggestion.description}"`);
+        if (selectedSuggestion.description) {
+          this.log(`   git commit -m "${selectedSuggestion.gitmoji} ${finalMessage}" -m "${selectedSuggestion.description}"`);
+        } else {
+          this.log(`   git commit -m "${selectedSuggestion.gitmoji} ${finalMessage}"`);
+        }
       } else {
         this.log('\n🚀 Committing changes...');
         await git.commit(fullCommitMessage);
@@ -190,25 +208,19 @@ static override flags = {
     }
   }
 
-  private formatCommitMessage(message: string, scope?: string): string {
-    // If scope is provided via command line, override any existing scope
-    if (scope) {
-      // Remove existing scope if present
-      const messageWithoutScope = message.replace(/^\([^)]+\):?\s*/, '');
-      
-      // Add new scope
-      if (messageWithoutScope.startsWith(':')) {
-        return `(${scope})${messageWithoutScope}`;
-      } else {
-        return `(${scope}): ${messageWithoutScope}`;
-      }
+  private formatCommitMessage(suggestion: CommitSuggestion, scope?: string): string {
+    // Use command line scope if provided, otherwise use AI-suggested scope
+    const finalScope = scope || suggestion.scope;
+    
+    if (finalScope) {
+      return `(${finalScope}): ${suggestion.message}`;
     }
-    return message;
+    return suggestion.message;
   }
 
   private formatFullCommitMessage(suggestion: CommitSuggestion, scope?: string): string {
-    const title = `${suggestion.gitmoji} ${this.formatCommitMessage(suggestion.message, scope)}`;
-    return `${title}\n\n${suggestion.description}`;
+    const title = `${suggestion.gitmoji} ${this.formatCommitMessage(suggestion, scope)}`;
+    return suggestion.description ? `${title}\n\n${suggestion.description}` : title;
   }
 
   private getStatusIndicator(index: string, workingDir: string): string {
