@@ -7,28 +7,52 @@ AI-powered gitmoji commit message generator! Automatically analyze your git chan
 - 🤖 **AI-Powered Analysis**: Uses advanced AI to understand your code changes
 - 🎯 **Smart Gitmoji Selection**: Automatically chooses the most appropriate gitmoji
 - 📝 **Official Gitmoji Spec**: Follows the [official gitmoji specification](https://gitmoji.dev/) format
-- 🔄 **Interactive Mode**: Choose from multiple AI-generated suggestions  
+- 🔄 **Interactive Mode**: Choose from multiple AI-generated suggestions
 - ⚙️ **Configurable**: Support for multiple AI providers (OpenAI, Anthropic)
 - 🚀 **Auto-commit**: Optionally commit automatically with generated messages
 - 📋 **Gitmoji Browser**: List and search available gitmojis
 - 🎨 **Extended Descriptions**: Detailed commit descriptions explaining what, why, and impact
 
-## 📦 Installation
+## 🚀 Quick Start (No Installation Required)
+
+Try gitmoji-msg instantly without installing:
 
 ```bash
-npm install -g gitmoji-msg
-# or
-pnpm add -g gitmoji-msg
+# Using bunx (recommended)
+bunx gitmoji-msg
+
+# Using pnpm
+pnpm dlx gitmoji-msg
+
+# Using npx
+npx gitmoji-msg
 ```
 
-## 🚀 Quick Start
+## 📦 Installation
+
+For regular use, install globally:
+
+```bash
+# Using bun (recommended)
+bun add -g gitmoji-msg
+
+# Using pnpm
+pnpm add -g gitmoji-msg
+
+# Using npm
+npm install -g gitmoji-msg
+```
+
+## 🚀 Getting Started
 
 1. **Set up your API key** (OpenAI example):
+
    ```bash
    export OPENAI_API_KEY="your-api-key"
    ```
 
 2. **Stage your changes**:
+
    ```bash
    git add .
    ```
@@ -113,6 +137,7 @@ gitmoji-msg list --codes
 ## ⚙️ Configuration
 
 The tool can be configured via:
+
 1. Environment variables
 2. Config file (`~/.gitmoji-msg.json`)
 3. Command line flags
@@ -124,13 +149,13 @@ The tool can be configured via:
 
 ### Config Options
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| `provider` | `openai` | AI provider (`openai`, `anthropic`) |
-| `model` | `gpt-4o-mini` | AI model to use |
-| `interactive` | `true` | Show multiple suggestions |
-| `autoCommit` | `false` | Auto-commit generated messages |
-| `scope` | - | Default scope for commits |
+| Option        | Default       | Description                         |
+| ------------- | ------------- | ----------------------------------- |
+| `provider`    | `openai`      | AI provider (`openai`, `anthropic`) |
+| `model`       | `gpt-4o-mini` | AI model to use                     |
+| `interactive` | `true`        | Show multiple suggestions           |
+| `autoCommit`  | `false`       | Auto-commit generated messages      |
+| `scope`       | -             | Default scope for commits           |
 
 ## 🎯 How It Works
 
@@ -143,12 +168,13 @@ The tool can be configured via:
 ## 📝 Examples
 
 ### Full Workflow (Recommended)
+
 ```bash
 $ gitmoji-msg run
 📋 Checking repository status...
 📁 Found 3 changed file(s):
    ➕ src/components/UserProfile.tsx
-   📝 src/types/user.ts  
+   📝 src/types/user.ts
    📝 README.md
 Add all changes and proceed with commit? Yes
 ➕ Adding all changes...
@@ -168,6 +194,7 @@ Add all changes and proceed with commit? Yes
 ```
 
 ### Manual Staging
+
 ```bash
 $ git add src/components/UserProfile.tsx
 $ gitmoji-msg
@@ -183,6 +210,7 @@ $ gitmoji-msg
 ```
 
 ### Bug Fix
+
 ```bash
 $ git add src/utils/validation.ts
 $ gitmoji-msg
@@ -191,13 +219,14 @@ $ gitmoji-msg
 🤖 Generating gitmoji suggestions...
 
 ✨ Generated commit message:
-   Title: 🐛 fix email validation regex pattern  
+   Title: 🐛 fix email validation regex pattern
    Description: Fixed the email validation regular expression that was incorrectly rejecting valid email addresses with plus signs and underscores. The previous pattern was too restrictive and caused user registration failures. This fix ensures all RFC-compliant email addresses are properly accepted.
    Reasoning: Bug fix for validation logic
    Confidence: 92%
 ```
 
 ### Documentation
+
 ```bash
 $ git add README.md docs/
 $ gitmoji-msg --scope docs
