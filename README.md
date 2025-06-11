@@ -1,397 +1,226 @@
+# 🎨 gitmoji-msg
+
+AI-powered gitmoji commit message generator! Automatically analyze your git changes and generate meaningful commit messages following the [gitmoji](https://gitmoji.dev/) standard.
+
+## ✨ Features
+
+- 🤖 **AI-Powered Analysis**: Uses advanced AI to understand your code changes
+- 🎯 **Smart Gitmoji Selection**: Automatically chooses the most appropriate gitmoji
+- 🔄 **Interactive Mode**: Choose from multiple AI-generated suggestions  
+- ⚙️ **Configurable**: Support for multiple AI providers (OpenAI, Anthropic)
+- 🚀 **Auto-commit**: Optionally commit automatically with generated messages
+- 📋 **Gitmoji Browser**: List and search available gitmojis
+- 🎨 **Conventional Commits**: Optional scope support for conventional commit format
+
+## 📦 Installation
+
+```bash
+npm install -g gitmoji-msg
+# or
+pnpm add -g gitmoji-msg
+```
+
+## 🚀 Quick Start
+
+1. **Set up your API key** (OpenAI example):
+   ```bash
+   export OPENAI_API_KEY="your-api-key"
+   ```
+
+2. **Stage your changes**:
+   ```bash
+   git add .
+   ```
+
+3. **Generate commit message**:
+   ```bash
+   gitmoji-msg
+   ```
+
+That's it! The AI will analyze your changes and suggest gitmoji commit messages.
+
+## 📖 Usage
+
+### Basic Commands
+
+```bash
+# Generate commit message (default command)
 gitmoji-msg
-=================
 
-create gitmoji commit messages with ai!
+# Generate and auto-commit
+gitmoji-msg --commit
 
+# Non-interactive mode (use first suggestion)
+gitmoji-msg --no-interactive
 
-[![oclif](https://img.shields.io/badge/cli-oclif-brightgreen.svg)](https://oclif.io)
-[![Version](https://img.shields.io/npm/v/gitmoji-msg.svg)](https://npmjs.org/package/gitmoji-msg)
-[![Downloads/week](https://img.shields.io/npm/dw/gitmoji-msg.svg)](https://npmjs.org/package/gitmoji-msg)
+# Add scope to commit message
+gitmoji-msg --scope api
 
-
-<!-- toc -->
-* [Usage](#usage)
-* [Commands](#commands)
-<!-- tocstop -->
-# Usage
-<!-- usage -->
-```sh-session
-$ npm install -g gitmoji-msg
-$ gitmoji-msg COMMAND
-running command...
-$ gitmoji-msg (--version)
-gitmoji-msg/0.0.0 darwin-arm64 node-v23.3.0
-$ gitmoji-msg --help [COMMAND]
-USAGE
-  $ gitmoji-msg COMMAND
-...
-```
-<!-- usagestop -->
-# Commands
-<!-- commands -->
-* [`gitmoji-msg hello PERSON`](#gitmoji-msg-hello-person)
-* [`gitmoji-msg hello world`](#gitmoji-msg-hello-world)
-* [`gitmoji-msg help [COMMAND]`](#gitmoji-msg-help-command)
-* [`gitmoji-msg plugins`](#gitmoji-msg-plugins)
-* [`gitmoji-msg plugins add PLUGIN`](#gitmoji-msg-plugins-add-plugin)
-* [`gitmoji-msg plugins:inspect PLUGIN...`](#gitmoji-msg-pluginsinspect-plugin)
-* [`gitmoji-msg plugins install PLUGIN`](#gitmoji-msg-plugins-install-plugin)
-* [`gitmoji-msg plugins link PATH`](#gitmoji-msg-plugins-link-path)
-* [`gitmoji-msg plugins remove [PLUGIN]`](#gitmoji-msg-plugins-remove-plugin)
-* [`gitmoji-msg plugins reset`](#gitmoji-msg-plugins-reset)
-* [`gitmoji-msg plugins uninstall [PLUGIN]`](#gitmoji-msg-plugins-uninstall-plugin)
-* [`gitmoji-msg plugins unlink [PLUGIN]`](#gitmoji-msg-plugins-unlink-plugin)
-* [`gitmoji-msg plugins update`](#gitmoji-msg-plugins-update)
-
-## `gitmoji-msg hello PERSON`
-
-Say hello
-
-```
-USAGE
-  $ gitmoji-msg hello PERSON -f <value>
-
-ARGUMENTS
-  PERSON  Person to say hello to
-
-FLAGS
-  -f, --from=<value>  (required) Who is saying hello
-
-DESCRIPTION
-  Say hello
-
-EXAMPLES
-  $ gitmoji-msg hello friend --from oclif
-  hello friend from oclif! (./src/commands/hello/index.ts)
+# Use specific AI model
+gitmoji-msg --model gpt-4
 ```
 
-_See code: [src/commands/hello/index.ts](https://github.com/hyusap/gitmoji-msg/blob/v0.0.0/src/commands/hello/index.ts)_
+### Full Workflow Command
 
-## `gitmoji-msg hello world`
+```bash
+# Add all changes, generate message, and commit automatically
+gitmoji-msg run
 
-Say hello world
+# Dry run - see what would be committed without committing
+gitmoji-msg run --dry
 
-```
-USAGE
-  $ gitmoji-msg hello world
+# Run with scope and non-interactive mode
+gitmoji-msg run --scope feat --no-interactive
 
-DESCRIPTION
-  Say hello world
-
-EXAMPLES
-  $ gitmoji-msg hello world
-  hello world! (./src/commands/hello/world.ts)
+# Run with custom model
+gitmoji-msg run --model gpt-4
 ```
 
-_See code: [src/commands/hello/world.ts](https://github.com/hyusap/gitmoji-msg/blob/v0.0.0/src/commands/hello/world.ts)_
+### Configuration
 
-## `gitmoji-msg help [COMMAND]`
+```bash
+# View current configuration
+gitmoji-msg config
 
-Display help for gitmoji-msg.
+# Interactive configuration
+gitmoji-msg config --interactive
 
-```
-USAGE
-  $ gitmoji-msg help [COMMAND...] [-n]
-
-ARGUMENTS
-  COMMAND...  Command to show help for.
-
-FLAGS
-  -n, --nested-commands  Include all nested commands in the output.
-
-DESCRIPTION
-  Display help for gitmoji-msg.
+# Set specific values
+gitmoji-msg config provider openai
+gitmoji-msg config model gpt-4o-mini
+gitmoji-msg config interactive true
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v6.2.28/src/commands/help.ts)_
+### Browse Gitmojis
 
-## `gitmoji-msg plugins`
+```bash
+# List all gitmojis
+gitmoji-msg list
 
-List installed plugins.
+# Search gitmojis
+gitmoji-msg list --search feature
+gitmoji-msg list --search bug
 
-```
-USAGE
-  $ gitmoji-msg plugins [--json] [--core]
+# Filter by category
+gitmoji-msg list --category feature
+gitmoji-msg list --category bug
 
-FLAGS
-  --core  Show core plugins.
-
-GLOBAL FLAGS
-  --json  Format output as json.
-
-DESCRIPTION
-  List installed plugins.
-
-EXAMPLES
-  $ gitmoji-msg plugins
+# Show codes instead of emojis
+gitmoji-msg list --codes
 ```
 
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.40/src/commands/plugins/index.ts)_
+## ⚙️ Configuration
 
-## `gitmoji-msg plugins add PLUGIN`
+The tool can be configured via:
+1. Environment variables
+2. Config file (`~/.gitmoji-msg.json`)
+3. Command line flags
 
-Installs a plugin into gitmoji-msg.
+### Environment Variables
 
-```
-USAGE
-  $ gitmoji-msg plugins add PLUGIN... [--json] [-f] [-h] [-s | -v]
+- `OPENAI_API_KEY` - OpenAI API key
+- `ANTHROPIC_API_KEY` - Anthropic API key
 
-ARGUMENTS
-  PLUGIN...  Plugin to install.
+### Config Options
 
-FLAGS
-  -f, --force    Force npm to fetch remote resources even if a local copy exists on disk.
-  -h, --help     Show CLI help.
-  -s, --silent   Silences npm output.
-  -v, --verbose  Show verbose npm output.
+| Option | Default | Description |
+|--------|---------|-------------|
+| `provider` | `openai` | AI provider (`openai`, `anthropic`) |
+| `model` | `gpt-4o-mini` | AI model to use |
+| `interactive` | `true` | Show multiple suggestions |
+| `autoCommit` | `false` | Auto-commit generated messages |
+| `scope` | - | Default scope for commits |
 
-GLOBAL FLAGS
-  --json  Format output as json.
+## 🎯 How It Works
 
-DESCRIPTION
-  Installs a plugin into gitmoji-msg.
+1. **Git Analysis**: Analyzes your staged changes using `git diff`
+2. **Pattern Detection**: Identifies file types, change patterns, and commit intent
+3. **AI Processing**: Sends analysis to AI with gitmoji context for intelligent suggestions
+4. **Gitmoji Selection**: AI chooses appropriate gitmojis based on change type
+5. **Message Generation**: Creates descriptive commit messages following conventions
 
-  Uses npm to install plugins.
+## 📝 Examples
 
-  Installation of a user-installed plugin will override a core plugin.
+### Full Workflow (Recommended)
+```bash
+$ gitmoji-msg run
+📋 Checking repository status...
+📁 Found 3 changed file(s):
+   ➕ src/components/UserProfile.tsx
+   📝 src/types/user.ts  
+   📝 README.md
+Add all changes and proceed with commit? Yes
+➕ Adding all changes...
+🔍 Analyzing changes...
+📊 Found changes in 3 file(s): tsx, ts, md
+🤖 Generating gitmoji suggestions...
 
-  Use the GITMOJI_MSG_NPM_LOG_LEVEL environment variable to set the npm loglevel.
-  Use the GITMOJI_MSG_NPM_REGISTRY environment variable to set the npm registry.
+✨ Generated commit message:
+   ✨ add UserProfile component with TypeScript types
+   Reasoning: New feature component was added to the codebase
+   Confidence: 95%
 
-ALIASES
-  $ gitmoji-msg plugins add
-
-EXAMPLES
-  Install a plugin from npm registry.
-
-    $ gitmoji-msg plugins add myplugin
-
-  Install a plugin from a github url.
-
-    $ gitmoji-msg plugins add https://github.com/someuser/someplugin
-
-  Install a plugin from a github slug.
-
-    $ gitmoji-msg plugins add someuser/someplugin
-```
-
-## `gitmoji-msg plugins:inspect PLUGIN...`
-
-Displays installation properties of a plugin.
-
-```
-USAGE
-  $ gitmoji-msg plugins inspect PLUGIN...
-
-ARGUMENTS
-  PLUGIN...  [default: .] Plugin to inspect.
-
-FLAGS
-  -h, --help     Show CLI help.
-  -v, --verbose
-
-GLOBAL FLAGS
-  --json  Format output as json.
-
-DESCRIPTION
-  Displays installation properties of a plugin.
-
-EXAMPLES
-  $ gitmoji-msg plugins inspect myplugin
+🚀 Committing changes...
+✅ Changes committed successfully!
+📋 Commit: a1b2c3d "✨ add UserProfile component with TypeScript types"
 ```
 
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.40/src/commands/plugins/inspect.ts)_
+### Manual Staging
+```bash
+$ git add src/components/UserProfile.tsx
+$ gitmoji-msg
+🔍 Analyzing staged changes...
+📊 Found changes in 1 file(s): tsx
+🤖 Generating gitmoji suggestions...
 
-## `gitmoji-msg plugins install PLUGIN`
-
-Installs a plugin into gitmoji-msg.
-
-```
-USAGE
-  $ gitmoji-msg plugins install PLUGIN... [--json] [-f] [-h] [-s | -v]
-
-ARGUMENTS
-  PLUGIN...  Plugin to install.
-
-FLAGS
-  -f, --force    Force npm to fetch remote resources even if a local copy exists on disk.
-  -h, --help     Show CLI help.
-  -s, --silent   Silences npm output.
-  -v, --verbose  Show verbose npm output.
-
-GLOBAL FLAGS
-  --json  Format output as json.
-
-DESCRIPTION
-  Installs a plugin into gitmoji-msg.
-
-  Uses npm to install plugins.
-
-  Installation of a user-installed plugin will override a core plugin.
-
-  Use the GITMOJI_MSG_NPM_LOG_LEVEL environment variable to set the npm loglevel.
-  Use the GITMOJI_MSG_NPM_REGISTRY environment variable to set the npm registry.
-
-ALIASES
-  $ gitmoji-msg plugins add
-
-EXAMPLES
-  Install a plugin from npm registry.
-
-    $ gitmoji-msg plugins install myplugin
-
-  Install a plugin from a github url.
-
-    $ gitmoji-msg plugins install https://github.com/someuser/someplugin
-
-  Install a plugin from a github slug.
-
-    $ gitmoji-msg plugins install someuser/someplugin
+✨ Generated commit message:
+   ✨ add UserProfile component with avatar support
+   Reasoning: New feature component was added to the codebase
+   Confidence: 95%
 ```
 
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.40/src/commands/plugins/install.ts)_
+### Bug Fix
+```bash
+$ git add src/utils/validation.ts
+$ gitmoji-msg
+🔍 Analyzing staged changes...
+📊 Found changes in 1 file(s): ts
+🤖 Generating gitmoji suggestions...
 
-## `gitmoji-msg plugins link PATH`
-
-Links a plugin into the CLI for development.
-
-```
-USAGE
-  $ gitmoji-msg plugins link PATH [-h] [--install] [-v]
-
-ARGUMENTS
-  PATH  [default: .] path to plugin
-
-FLAGS
-  -h, --help          Show CLI help.
-  -v, --verbose
-      --[no-]install  Install dependencies after linking the plugin.
-
-DESCRIPTION
-  Links a plugin into the CLI for development.
-
-  Installation of a linked plugin will override a user-installed or core plugin.
-
-  e.g. If you have a user-installed or core plugin that has a 'hello' command, installing a linked plugin with a 'hello'
-  command will override the user-installed or core plugin implementation. This is useful for development work.
-
-
-EXAMPLES
-  $ gitmoji-msg plugins link myplugin
+✨ Generated commit message:
+   🐛 fix email validation regex pattern
+   Reasoning: Bug fix for validation logic
+   Confidence: 92%
 ```
 
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.40/src/commands/plugins/link.ts)_
+### Documentation
+```bash
+$ git add README.md docs/
+$ gitmoji-msg --scope docs
+🔍 Analyzing staged changes...
+📊 Found changes in 2 file(s): md
+🤖 Generating gitmoji suggestions...
 
-## `gitmoji-msg plugins remove [PLUGIN]`
-
-Removes a plugin from the CLI.
-
-```
-USAGE
-  $ gitmoji-msg plugins remove [PLUGIN...] [-h] [-v]
-
-ARGUMENTS
-  PLUGIN...  plugin to uninstall
-
-FLAGS
-  -h, --help     Show CLI help.
-  -v, --verbose
-
-DESCRIPTION
-  Removes a plugin from the CLI.
-
-ALIASES
-  $ gitmoji-msg plugins unlink
-  $ gitmoji-msg plugins remove
-
-EXAMPLES
-  $ gitmoji-msg plugins remove myplugin
+✨ Generated commit message:
+   📝(docs): update API documentation and examples
+   Reasoning: Documentation files were updated
+   Confidence: 98%
 ```
 
-## `gitmoji-msg plugins reset`
+## 🤝 Contributing
 
-Remove all user-installed and linked plugins.
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`gitmoji-msg --commit`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-```
-USAGE
-  $ gitmoji-msg plugins reset [--hard] [--reinstall]
+## 📄 License
 
-FLAGS
-  --hard       Delete node_modules and package manager related files in addition to uninstalling plugins.
-  --reinstall  Reinstall all plugins after uninstalling.
-```
+MIT License - see [LICENSE](LICENSE) file for details.
 
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.40/src/commands/plugins/reset.ts)_
+## 🙏 Acknowledgments
 
-## `gitmoji-msg plugins uninstall [PLUGIN]`
-
-Removes a plugin from the CLI.
-
-```
-USAGE
-  $ gitmoji-msg plugins uninstall [PLUGIN...] [-h] [-v]
-
-ARGUMENTS
-  PLUGIN...  plugin to uninstall
-
-FLAGS
-  -h, --help     Show CLI help.
-  -v, --verbose
-
-DESCRIPTION
-  Removes a plugin from the CLI.
-
-ALIASES
-  $ gitmoji-msg plugins unlink
-  $ gitmoji-msg plugins remove
-
-EXAMPLES
-  $ gitmoji-msg plugins uninstall myplugin
-```
-
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.40/src/commands/plugins/uninstall.ts)_
-
-## `gitmoji-msg plugins unlink [PLUGIN]`
-
-Removes a plugin from the CLI.
-
-```
-USAGE
-  $ gitmoji-msg plugins unlink [PLUGIN...] [-h] [-v]
-
-ARGUMENTS
-  PLUGIN...  plugin to uninstall
-
-FLAGS
-  -h, --help     Show CLI help.
-  -v, --verbose
-
-DESCRIPTION
-  Removes a plugin from the CLI.
-
-ALIASES
-  $ gitmoji-msg plugins unlink
-  $ gitmoji-msg plugins remove
-
-EXAMPLES
-  $ gitmoji-msg plugins unlink myplugin
-```
-
-## `gitmoji-msg plugins update`
-
-Update installed plugins.
-
-```
-USAGE
-  $ gitmoji-msg plugins update [-h] [-v]
-
-FLAGS
-  -h, --help     Show CLI help.
-  -v, --verbose
-
-DESCRIPTION
-  Update installed plugins.
-```
-
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.40/src/commands/plugins/update.ts)_
-<!-- commandsstop -->
+- [Gitmoji](https://gitmoji.dev/) for the awesome emoji convention
+- [AI SDK](https://ai-sdk.dev/) for the AI integration framework
+- [oclif](https://oclif.io/) for the CLI framework

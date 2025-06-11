@@ -1,7 +1,7 @@
 import { generateObject } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import { z } from 'zod';
-import { gitmojis } from 'gitmojis';
+import { gitmojis } from './gitmojis.js';
 import { GitChangeAnalysis } from './git.js';
 
 const CommitSuggestionSchema = z.object({
@@ -53,9 +53,7 @@ export class AICommitGenerator {
   private getModel() {
     switch (this.config.provider) {
       case 'openai':
-        return openai(this.config.model || 'gpt-4o-mini', {
-          apiKey: this.config.apiKey || process.env.OPENAI_API_KEY,
-        });
+        return openai(this.config.model || 'gpt-4o-mini');
       default:
         throw new Error(`Unsupported AI provider: ${this.config.provider}`);
     }

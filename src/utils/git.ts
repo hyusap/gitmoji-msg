@@ -1,4 +1,4 @@
-import { simpleGit, SimpleGit, DiffResult } from 'simple-git';
+import { simpleGit, SimpleGit } from 'simple-git';
 
 export interface GitChangeAnalysis {
   hasNewFiles: boolean;
@@ -23,7 +23,7 @@ export class GitAnalyzer {
     this.git = simpleGit(baseDir);
   }
 
-  async getStagedChanges(): Promise<DiffResult | null> {
+  async getStagedChanges(): Promise<string | null> {
     try {
       const status = await this.git.status();
       if (status.staged.length === 0) {
@@ -35,7 +35,7 @@ export class GitAnalyzer {
     }
   }
 
-  async getLastCommitChanges(): Promise<DiffResult | null> {
+  async getLastCommitChanges(): Promise<string | null> {
     try {
       return await this.git.diff(['HEAD~1', 'HEAD']);
     } catch (error) {
@@ -43,7 +43,7 @@ export class GitAnalyzer {
     }
   }
 
-  async analyzeChanges(diff?: DiffResult): Promise<GitChangeAnalysis> {
+  async analyzeChanges(diff?: string): Promise<GitChangeAnalysis> {
     if (!diff) {
       const stagedDiff = await this.getStagedChanges();
       if (!stagedDiff) {
@@ -52,14 +52,14 @@ export class GitAnalyzer {
       diff = stagedDiff;
     }
 
-    const files = diff.files || [];
-    const filePaths = files.map(f => f.file);
+    // Parse file paths from diff
+    const filePaths = this.extractFilePathsFromDiff(diff);
     const fileTypes = this.extractFileTypes(filePaths);
     
     return {
-      hasNewFiles: files.some(f => f.insertions > 0 && f.deletions === 0),
-      hasDeletedFiles: files.some(f => f.deletions > 0 && f.insertions === 0),
-      hasModifiedFiles: files.some(f => f.insertions > 0 && f.deletions > 0),
+      hasNewFiles: this.detectNewFiles(diff),
+      hasDeletedFiles: this.detectDeletedFiles(diff),
+      hasModifiedFiles: this.detectModifiedFiles(diff),
       fileTypes,
       isBreakingChange: this.detectBreakingChange(diff),
       isFeature: this.detectFeature(diff, filePaths),
@@ -68,7 +68,7 @@ export class GitAnalyzer {
       isDocumentation: this.detectDocumentation(filePaths),
       isTest: this.detectTest(filePaths),
       isConfig: this.detectConfig(filePaths),
-      changeDescription: this.generateChangeDescription(files),
+      changeDescription: this.generateChangeDescription(diff),
       filePaths,
     };
   }
@@ -81,8 +81,38 @@ export class GitAnalyzer {
     return [...new Set(extensions)];
   }
 
-  private detectBreakingChange(diff: DiffResult): boolean {
-    const diffText = diff.summary?.changes?.toString() || '';
+  private extractFilePathsFromDiff(diff: string): string[] {
+    const lines = diff.split('\n');
+    const filePaths: string[] = [];
+    
+    for (const line of lines) {
+      if (line.startsWith('+++') || line.startsWith('---')) {
+        const match = line.match(/[+-]{3}\s+(.+)/);
+        if (match && match[1] !== '/dev/null') {
+          const path = match[1].replace(/^[ab]\//, '');
+          if (!filePaths.includes(path)) {
+            filePaths.push(path);
+          }
+        }
+      }
+    }
+    
+    return filePaths;
+  }
+
+  private detectNewFiles(diff: string): boolean {
+    return /^\+\+\+.*\/dev\/null/m.test(diff) === false && /^---.*\/dev\/null/m.test(diff);
+  }
+
+  private detectDeletedFiles(diff: string): boolean {
+    return /^\+\+\+.*\/dev\/null/m.test(diff);
+  }
+
+  private detectModifiedFiles(diff: string): boolean {
+    return /^@@/m.test(diff);
+  }
+
+  private detectBreakingChange(diff: string): boolean {
     const breakingPatterns = [
       /BREAKING[\s\-_]CHANGE/i,
       /breaking/i,
@@ -90,19 +120,17 @@ export class GitAnalyzer {
       /delete.*function/i,
     ];
     
-    return breakingPatterns.some(pattern => pattern.test(diffText));
+    return breakingPatterns.some(pattern => pattern.test(diff));
   }
 
-  private detectFeature(diff: DiffResult, filePaths: string[]): boolean {
-    const diffText = diff.summary?.changes?.toString() || '';
-    const hasNewFunctionality = /(\+.*function|\+.*class|\+.*export)/i.test(diffText);
+  private detectFeature(diff: string, filePaths: string[]): boolean {
+    const hasNewFunctionality = /(\+.*function|\+.*class|\+.*export)/i.test(diff);
     const hasNewFiles = filePaths.some(path => !path.includes('test') && !path.includes('spec'));
     
     return hasNewFunctionality || hasNewFiles;
   }
 
-  private detectBugFix(diff: DiffResult): boolean {
-    const diffText = diff.summary?.changes?.toString() || '';
+  private detectBugFix(diff: string): boolean {
     const bugPatterns = [
       /fix/i,
       /bug/i,
@@ -111,11 +139,10 @@ export class GitAnalyzer {
       /patch/i,
     ];
     
-    return bugPatterns.some(pattern => pattern.test(diffText));
+    return bugPatterns.some(pattern => pattern.test(diff));
   }
 
-  private detectRefactor(diff: DiffResult): boolean {
-    const diffText = diff.summary?.changes?.toString() || '';
+  private detectRefactor(diff: string): boolean {
     const refactorPatterns = [
       /refactor/i,
       /restructure/i,
@@ -123,7 +150,7 @@ export class GitAnalyzer {
       /cleanup/i,
     ];
     
-    return refactorPatterns.some(pattern => pattern.test(diffText));
+    return refactorPatterns.some(pattern => pattern.test(diff));
   }
 
   private detectDocumentation(filePaths: string[]): boolean {
@@ -164,11 +191,12 @@ export class GitAnalyzer {
     return filePaths.some(path => configPatterns.some(pattern => pattern.test(path)));
   }
 
-  private generateChangeDescription(files: any[]): string {
-    const totalInsertions = files.reduce((sum, f) => sum + f.insertions, 0);
-    const totalDeletions = files.reduce((sum, f) => sum + f.deletions, 0);
-    const fileCount = files.length;
+  private generateChangeDescription(diff: string): string {
+    const lines = diff.split('\n');
+    const additions = lines.filter(line => line.startsWith('+')).length;
+    const deletions = lines.filter(line => line.startsWith('-')).length;
+    const fileCount = this.extractFilePathsFromDiff(diff).length;
     
-    return `Modified ${fileCount} file${fileCount > 1 ? 's' : ''} with ${totalInsertions} addition${totalInsertions !== 1 ? 's' : ''} and ${totalDeletions} deletion${totalDeletions !== 1 ? 's' : ''}`;
+    return `Modified ${fileCount} file${fileCount > 1 ? 's' : ''} with ${additions} addition${additions !== 1 ? 's' : ''} and ${deletions} deletion${deletions !== 1 ? 's' : ''}`;
   }
 }
