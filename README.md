@@ -51,69 +51,83 @@ npm install -g gitmoji-msg
    export OPENAI_API_KEY="your-api-key"
    ```
 
-2. **Stage your changes**:
-
+2. **Generate commit message**:
    ```bash
-   git add .
-   ```
-
-3. **Generate commit message**:
-   ```bash
-   gitmoji-msg
+   gitmoji-msg run
    ```
 
 That's it! The AI will analyze your changes and suggest gitmoji commit messages.
 
 ## 📖 Usage
 
-### Basic Commands
+```
+USAGE
+  $ gitmoji-msg [COMMAND]
 
-```bash
-# Generate commit message (default command)
-gitmoji-msg
-
-# Generate and auto-commit
-gitmoji-msg --commit
-
-# Non-interactive mode (use first suggestion)
-gitmoji-msg --no-interactive
-
-# Add scope to commit message
-gitmoji-msg --scope api
-
-# Use specific AI model
-gitmoji-msg --model gpt-4
+COMMANDS
+  config    Manage gitmoji-msg configuration settings
+  generate  Generate gitmoji commit messages using AI analysis of your staged changes
+  help      Display help for gitmoji-msg
+  list      List available gitmojis with their descriptions
+  plugins   List installed plugins
+  run       Add all changes, generate gitmoji commit message, and commit automatically
 ```
 
-### Full Workflow Command
+### Basic Commands
 
 ```bash
 # Add all changes, generate message, and commit automatically
 gitmoji-msg run
 
-# Dry run - see what would be committed without committing
-gitmoji-msg run --dry
+# Generate commit message for staged changes only (stages nothing if nothing staged)
+gitmoji-msg generate
 
-# Run with scope and non-interactive mode
-gitmoji-msg run --scope feat --no-interactive
+# Manage configuration settings
+gitmoji-msg config
 
-# Run with custom model
-gitmoji-msg run --model gpt-4
+# List available gitmojis
+gitmoji-msg list
+
+# Display help
+gitmoji-msg help
 ```
 
-### Configuration
+### Generate Command Options
+
+```bash
+# Generate with specific options
+gitmoji-msg generate --scope api --model gpt-4
+
+# Non-interactive mode (use first suggestion)
+gitmoji-msg generate --no-interactive
+
+# Auto-commit after generating
+gitmoji-msg generate --commit
+```
+
+### Run Command Options
+
+```bash
+# Full workflow with options
+gitmoji-msg run --scope feat --model gpt-4
+
+# Dry run - see what would be committed without committing
+gitmoji-msg run --dry-run
+
+# Non-interactive run
+gitmoji-msg run --no-interactive
+```
+
+### Configuration Management
 
 ```bash
 # View current configuration
 gitmoji-msg config
 
-# Interactive configuration
-gitmoji-msg config --interactive
-
-# Set specific values
-gitmoji-msg config provider openai
-gitmoji-msg config model gpt-4o-mini
-gitmoji-msg config interactive true
+# Set configuration values
+gitmoji-msg config set provider openai
+gitmoji-msg config set model gpt-4o-mini
+gitmoji-msg config set interactive true
 ```
 
 ### Browse Gitmojis
@@ -122,15 +136,11 @@ gitmoji-msg config interactive true
 # List all gitmojis
 gitmoji-msg list
 
-# Search gitmojis
+# Search gitmojis by keyword
 gitmoji-msg list --search feature
 gitmoji-msg list --search bug
 
-# Filter by category
-gitmoji-msg list --category feature
-gitmoji-msg list --category bug
-
-# Show codes instead of emojis
+# Show gitmoji codes instead of emojis
 gitmoji-msg list --codes
 ```
 
@@ -159,7 +169,14 @@ The tool can be configured via:
 
 ## 🎯 How It Works
 
-1. **Git Analysis**: Analyzes your staged changes using `git diff`
+### Smart Staging Behavior
+
+- **`run` command**: If nothing is staged, stages all changes automatically. If changes are already staged, works only with those staged changes.
+- **`generate` command**: Only works with currently staged changes. Won't stage anything automatically.
+
+### Process
+
+1. **Git Analysis**: Analyzes your changes using `git diff`
 2. **Pattern Detection**: Identifies file types, change patterns, and commit intent
 3. **AI Processing**: Sends analysis to AI with gitmoji context for intelligent suggestions
 4. **Gitmoji Selection**: AI chooses appropriate gitmojis based on change type
@@ -193,12 +210,11 @@ Add all changes and proceed with commit? Yes
 📋 Commit: a1b2c3d "✨ (components): add UserProfile with avatar support"
 ```
 
-### Manual Staging
+### Generate and Commit
 
 ```bash
-$ git add src/components/UserProfile.tsx
-$ gitmoji-msg
-🔍 Analyzing staged changes...
+$ gitmoji-msg run
+🔍 Analyzing changes...
 📊 Found changes in 1 file(s): tsx
 🤖 Generating gitmoji suggestions...
 
@@ -212,9 +228,8 @@ $ gitmoji-msg
 ### Bug Fix
 
 ```bash
-$ git add src/utils/validation.ts
-$ gitmoji-msg
-🔍 Analyzing staged changes...
+$ gitmoji-msg run
+🔍 Analyzing changes...
 📊 Found changes in 1 file(s): ts
 🤖 Generating gitmoji suggestions...
 
@@ -228,9 +243,8 @@ $ gitmoji-msg
 ### Documentation
 
 ```bash
-$ git add README.md docs/
-$ gitmoji-msg --scope docs
-🔍 Analyzing staged changes...
+$ gitmoji-msg run --scope docs
+🔍 Analyzing changes...
 📊 Found changes in 2 file(s): md
 🤖 Generating gitmoji suggestions...
 
